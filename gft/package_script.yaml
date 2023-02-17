@@ -1,0 +1,12 @@
+gft:
+  project_path: /home/zg/work/gft-item-services
+  package_path: /home/zg/Documents/gftPackage
+  chrome_driver_path: /home/zg/chromedriver
+  doc_path: /home/zg/Downloads/selenium
+  account_passwd:
+    fzs: ["FZSKF", "Fzskf@1234"]
+    lax: ["LAXKF", "Laxkf@123456"]
+  # route_list: ["grcy", "qyzgtx"]
+  # route_list: ["grcy", "qyzgtx", "lhjy", "gxjy", "ygly"]
+  route_list: ["grcy", "qyzgtx", "gxjy", "ygly"]
+  timeout: 30

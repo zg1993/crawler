@@ -3,6 +3,7 @@
 import os
 import subprocess
 import re
+import traceback
 
 ROUTER_FILE = '/home/zg/work/gft-item-services/src/router/routes/index.ts'
 ROUTER_FILE_BAK = '/home/zg/work/gft-item-services/src/router/index.ts'
@@ -10,12 +11,12 @@ VITE_CONFIG = '/home/zg/work/gft-item-services/vite.config.ts'
 # ROUTER_FILE = '/home/zg/work/gft-item-services/.env.development'
 
 # ROUTE_LIST = [
-#     'grcy', 'lhjy', 'lose-job', 'gxjy', 'ygly', 'social-assistance', 'sy',
+#     'grcy', 'lhjy', 'losejob', 'gxjy', 'ygly', 'social-assistance', 'sy',
 #     'wykfd'
 # ]
 # ROUTE_LIST = ['grcy', 'lhjy', 'gxjy', 'ygly']
 # ROUTE_LIST = ['sy']
-ROUTE_LIST = ['sy']
+ROUTE_LIST = ['losejob']
 
 
 def replace_content(file_path, line_number, replace_str):
@@ -51,13 +52,20 @@ def pack(project_path, package_path, package_name):
             os.system('zip -r {0}.zip {0}/'.format(package_name))
             os.system('rm -rf {}'.format(package_name))
             os.system('mv {0}.zip {1}'.format(package_name, package_path))
+            return True
     except subprocess.CalledProcessError as e:
+        traceback.print_exc()
         print('build failed')
+        return False
 
 
-def batch_pack(project_path, package_path):
-    for route in ROUTE_LIST:
-        pack(project_path, package_path, route)
+def batch_pack(project_path, package_path, route_list=ROUTE_LIST):
+    res = []
+    for route in route_list:
+        res.append(pack(project_path, package_path, route))
+    return res
+
+    # if not res:
 
 
 if __name__ == '__main__':

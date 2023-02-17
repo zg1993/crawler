@@ -2,6 +2,8 @@
 
 import time
 import os
+import traceback
+import argparse
 # import functools
 # from matplotlib.dates import SecondLocator
 
@@ -11,11 +13,49 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
 # from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.support import expected_conditions as EC
 
-from tools.date_utils import tt
+from tools.file_utils import parser_yaml
+from gft.batch_pack import batch_pack
 
-CHROME_DRIVER_PATH = '/home/zg/chromedriver'
-DOC_PATH = '/home/zg/Downloads/selenium'
+PROJECT_PATH = None
+CHROME_DRIVER_PATH = None
+DOC_PATH = None
+PACKAGE_PATH = None
+ACCOUNT = None
+PASSWD = None
+
+# package
+ROUTE_LIST = []
+TIMEOUT = 10
+
+# fuzhou
+route_id_map = {
+    'lhjy': 'lhjyyjslbkcltl',
+    'qyzgtx': 'qyzgtxyjslbkzrgk',
+    'losejob': 'syyjslbqjacr',
+    'grcy': 'grcyyjslbqjmzv',
+    'gxjy': 'gxjyyjslbserpi',
+    'ygly': 'yglyyjslbygvea',
+    'wykfd': 'wykcydvqsnb',
+    'sy': 'syyjsltbktppz',
+    'socialassistance': '',
+    'fczc': '',
+}
+
+
+def configure_gft(region='fzs'):
+    global PROJECT_PATH, CHROME_DRIVER_PATH, DOC_PATH, PACKAGE_PATH, ACCOUNT, PASSWD, ROUTE_LIST, TIMEOUT
+    config = parser_yaml('./gft/package_script.yaml')
+    gft_config = config['gft']  # GftSimular.name
+
+    PROJECT_PATH = gft_config['project_path']
+    CHROME_DRIVER_PATH = gft_config['chrome_driver_path']
+    DOC_PATH = gft_config['doc_path']
+    PACKAGE_PATH = gft_config['package_path']
+    [ACCOUNT, PASSWD] = gft_config['account_passwd'][region]
+    ROUTE_LIST = gft_config['route_list']
+    TIMEOUT = gft_config['timeout']
 
 
 class Simulator:
@@ -44,8 +84,6 @@ class GftSimular(Simulator):
     name = 'gft'
     login_url = 'http://ganfutong.jiangxi.gov.cn:30014/api-gateway/common-ucenter-server/oauth2/ssologin'
     app_list_url = 'http://ganfutong.jiangxi.gov.cn:30014/jpaas/appcenter/appmenu/application'
-    account = 'LAXKF'
-    passwd = 'Laxkf@123456'
     explainWord_name = 'explainWord.doc'
     pressureWord_name = 'pressureWord.doc'
     detectionWord_name = 'detectionWord.xls'
@@ -54,52 +92,96 @@ class GftSimular(Simulator):
     def __init__(self) -> None:
         super(GftSimular, self).__init__()
         self.doc_path = os.path.join(DOC_PATH, self.name)
+        self.app_id = None
+        self.route_name = None
+        self.app_name = None
 
     def test_browser(self):
         self.browser = webdriver.Chrome(service=self.service)
+
+    def test(self, route_name='losejob'):
+        self.login()
+        for _ in range(10):
+            self.app_detail_page(route_name)
 
     def resume_input(self, input_element, text):
         ActionChains(self.browser).double_click(input_element).perform()
         input_element.send_keys(text)
 
-    def handle(self, app_id):
+    def handle(self, route_name):
         self.login()
-        self.app_detail_page(app_id)
+        self.app_detail_page(route_name)
         self.add_version()
+
+    def script(self, route_name):
+        self.app_detail_page(route_name)
+        # self.add_version()
 
     def login(self):
         self.browser.maximize_window()
         self.browser.get(self.login_url)
-        account_input = self.browser.find_element(By.ID, 'loginUserName')
-        passwd_input = self.browser.find_element(By.ID, 'password-text')
-        login_btn = self.browser.find_element(By.XPATH,
-                                              '//div[@class="account-btn"]')
-        account_input.click()
-        account_input.send_keys(self.account)
-        passwd_input.click()
-        passwd_input.send_keys(self.passwd)
-        login_btn.click()
+        WebDriverWait(self.browser,
+                      timeout=TIMEOUT).until(lambda b: b.find_element(
+                          By.ID, 'loginUserName')).send_keys(ACCOUNT)
+        WebDriverWait(self.browser, timeout=TIMEOUT).until(
+            lambda b: b.find_element(By.ID, 'password-text')).send_keys(PASSWD)
+        WebDriverWait(self.browser,
+                      timeout=TIMEOUT).until(lambda b: b.find_element(
+                          By.XPATH, '//div[@class="account-btn"]')).click()
+        WebDriverWait(self.browser, timeout=TIMEOUT).until(
+            lambda b: b.find_element(By.XPATH, '//span[text()="工作"]'))
+        print('login success')
 
-    def app_detail_page(self, app_id):
+    def app_detail_page(self, route_name):
+        self.route_name = route_name
+        self.app_id = route_id_map.get(route_name)
+
         self.browser.get(self.app_list_url)
         app_id_input = WebDriverWait(
-            self.browser, timeout=10).until(lambda b: b.find_element(
+            self.browser, timeout=TIMEOUT).until(lambda b: b.find_element(
                 By.XPATH, '//input[@placeholder="请输入应用标识"]'))
-        search_btn = self.browser.find_element(By.XPATH,
-                                               '//span[text()="查 询"]/..')
-
-        app_id_input.send_keys(app_id)
-        search_btn.click()
-        detail_btn = WebDriverWait(
-            self.browser, timeout=10
+        app_id_input.send_keys(self.app_id)
+        WebDriverWait(
+            self.browser, timeout=TIMEOUT
         ).until(lambda b: b.find_element(
             By.XPATH,
-            '//div[@class="ant-card-meta-title"]/div[text()="应用唯一标识：dzzzdy"]/..//button'
+            '//div[@class="ant-card-meta-title"]/div[starts-with(text(), "应用唯一标识")]'
         ))
+        WebDriverWait(self.browser, timeout=TIMEOUT).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, '//span[text()="查 询"]/..'))).click()
+        # detail_btn = WebDriverWait(
+        #     self.browser, timeout=TIMEOUT
+        # ).until(lambda b: b.find_element(
+        #     By.XPATH,
+        #     '//div[@class="ant-card-meta-title"]/div[text()="应用唯一标识：{}"]/..//button'
+        #     .format(self.app_id)))
+
+        detail_btn = WebDriverWait(self.browser, TIMEOUT).until(
+            EC.element_to_be_clickable((
+                By.XPATH,
+                '//div[@class="ant-spin-container"]/div[@class="ant-row"]/div[1]//div[text()="应用唯一标识：{}"]/..//button'
+                .format(self.app_id))))
+
+        title_div = WebDriverWait(
+            self.browser, TIMEOUT).until(lambda b: b.find_element(
+                By.XPATH,
+                '//div[text()="应用唯一标识：{}"]/../div[starts-with(text(),"应用名称：")]'
+                .format(self.app_id)))
+        print('---', title_div.text)
+        self.app_name = title_div.text[5:]
+        print(self.app_name)
+        print(self.app_id)
+
         detail_btn.click()
-        WebDriverWait(self.browser, timeout=10).until(
+        WebDriverWait(self.browser, timeout=TIMEOUT).until(
             lambda b: b.find_element(By.XPATH, '//tbody[1]/tr[1]/td[1]'))
-        # time.sleep(3)
+
+    def perfect_app(self):
+        pass
+        # : e = b.find_element(By.XPATH, '//ul[@class="ant-card-actions"]//button[@class="ant-btn ant-btn-link"]/span[text()="完
+
+    #  ...: 善应用"]/..')
 
     def add_version(self):
         # versionNo_input
@@ -118,7 +200,7 @@ class GftSimular(Simulator):
         add_version_btn = self._find('//a[text()="版本添加"]')
         add_version_btn.click()
         submit_btn = WebDriverWait(
-            self.browser, timeout=10
+            self.browser, timeout=TIMEOUT
         ).until(lambda b: b.find_element(
             By.XPATH,
             '//button[@class="ant-btn ant-btn-primary"]/span[text()="提 交"]/..')
@@ -132,8 +214,8 @@ class GftSimular(Simulator):
         '''
         self.browser.execute_script(js)
 
-        # self.browser.find_element(By.ID, 'versionNo').send_keys(version_text)
-        self.browser.find_element(By.ID, 'versionNo').send_keys('2.0.0')
+        self.browser.find_element(By.ID, 'versionNo').send_keys(version_text)
+        # self.browser.find_element(By.ID, 'versionNo').send_keys('2.0.0')
         self.browser.find_element(
             By.ID, 'explainWordFile').send_keys(explainWord_path)
         self.browser.find_element(
@@ -142,32 +224,76 @@ class GftSimular(Simulator):
             By.ID, 'detectionWordFile').send_keys(detectionWord_path)
         #languageType
         #zipType
-        self.browser.find_element(
-            By.ID, 'zipFile').send_keys('/home/zg/Documents/gftPackage/sy.zip')
+        # self.browser.find_element(By.ID, 'zipFile').send_keys(
+        #     '/home/zg/Documents/gftPackage/{}.zip'.format(d[self.app_id]))
+        self.browser.find_element(By.ID, 'zipFile').send_keys(
+            os.path.join(PACKAGE_PATH, self.route_name + '.zip'))
         self.browser.find_element(By.ID, 'updateExplain').send_keys('test')
         submit_btn.click()
         try:
             tip = WebDriverWait(
-                self.browser, timeout=10).until(lambda b: b.find_element(
-                    By.XPATH,
-                    '//div[@class="ant-notification-notice-description"]'.
-                    format(version_text)))
-            print(tip.text)
-        except Exception:
-            pass
+                self.browser, timeout=TIMEOUT
+            ).until(lambda b: b.find_element(
+                By.XPATH,
+                '//div[@class="ant-notification-notice-description" or @class="ant-message-custom-content ant-message-success"]'
+            ))
+            # 该应用此版本号已存在
+            # print(tip.text)
+            if '保存成功' == tip.text:
+                print('{0} 添加成功{1}'.format(self.app_name, version_text))
+                self.submit_review(version_text)
+            else:
+                print('{0} 添加失败: {1}'.format(self.app_name, tip.text))
+        except Exception as e:
+            print('{0} 添加失败'.format(self.app_name))
+            print(e)
+            print('----')
+            #local variable 'tip' referenced before assignment
+            # printa(tip)
+
+        # try:
+        #     WebDriverWait(self.browser,
+        #                   timeout=TIMEOUT).until(lambda b: b.find_element(
+        #                       By.XPATH, '//tbody[1]/tr[1]/td[text()="{}"]'.
+        #                       format(version_text)))
+        #     print('add success')
+        # except Exception:
+        #     print('+-=')
+        #     pass
+
+    # 指定版本提交审核
+    def submit_review(self, version_text):
+        self.browser.refresh()
         try:
             WebDriverWait(self.browser,
-                          timeout=10).until(lambda b: b.find_element(
+                          timeout=TIMEOUT).until(lambda b: b.find_element(
                               By.XPATH, '//tbody[1]/tr[1]/td[text()="{}"]'.
                               format(version_text)))
-            print('add success')
+            self._find('//tbody[1]/tr[1]//a[text()="提交审核"]').click()
+            WebDriverWait(self.browser, TIMEOUT).until(
+                EC.element_to_be_clickable((
+                    By.XPATH,
+                    '//div[@class="ant-modal-footer"]//button[@class="ant-btn ant-btn-primary"]/span[text()="确 定"]/..'
+                ))).click()
+
+            # WebDriverWait(
+            #     self.browser, TIMEOUT
+            # ).until(lambda b: b.find_element(
+            #     By.XPATH,
+            #     '//div[@class="ant-modal-footer"]//button[@class="ant-btn ant-btn-primary"]'
+            # )).click()
+            print('提交审核成功:{0}，版本号{1}'.format(self.app_name, version_text))
         except Exception:
-            pass
+            print('请指定正确的版本')
 
     def _count_version(self, version):
-        v_list = version.split('.')
-        v_list[-1] = str(int(v_list[-1]) + 1)
-        return '.'.join(v_list)
+        if (5 == len(version)):
+            count = int(version.replace('.', ''))
+            return '.'.join(list(str(count + 1)))
+        else:
+            v_list = version.split('.')
+            v_list[-1] = str(int(v_list[-1]) + 1)
+            return '.'.join(v_list)
 
     def _get_previous_version(self):
         assert 'AppDetail' in self.browser.current_url
@@ -176,9 +302,6 @@ class GftSimular(Simulator):
         return version_span.text
 
 
-# b.find_element(By.XPATH,'//a[text()="版本添加"]')
-# '//span[@class="ant-modal-confirm-title" and text()="未授权"]'
-# b.find_element(By.XPATH, '//button[@class="ant-btn ant-btn-primary"]/span[text()="确 定"]/..').click() 重新登录
 def test(app_id='dzzzdy', max_count=0):
     failed_id_dict = {}
     failed_id = []
@@ -190,6 +313,7 @@ def test(app_id='dzzzdy', max_count=0):
             with GftSimular() as s:
                 s.handle(app_id)
         except Exception as e:
+            traceback.print_exc()
             print('-')
             print(count)
             if (count == max_count):
@@ -201,9 +325,47 @@ def test(app_id='dzzzdy', max_count=0):
     print(failed_id_dict)
 
 
+def t():
+    with GftSimular() as s:
+        s.test()
+        time.sleep(6)
+
+
+def batch_add_version():
+    with GftSimular() as s:
+        s.login()
+        for route_name in ROUTE_LIST:
+            app_id = route_id_map.get(route_name)
+            if app_id:
+                s.script(route_name)
+        time.sleep(30)
+
+
 if __name__ == '__main__':
-    test()
-    # pass
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--region',
+                        help='指定登录区县(中文首字母缩写)，默认抚州市',
+                        default='fzs')
+    parser.add_argument('--isPack',
+                        help="是否打包，1打包 0不打包",
+                        default='1',
+                        type=int)
+    args = parser.parse_args()
+    region = args.region
+    configure_gft(region)
+    if 'lax' == region:
+        route_id_map = {
+            'grcy': 'laxtest',
+            # 'sy': 'laxcsyyxfowl',
+            'qyzgtx': 'csfzzxqmley',
+        }
+    resList = []
+    if args.isPack:
+        resList = batch_pack(PROJECT_PATH, PACKAGE_PATH, ROUTE_LIST)
+    if all(resList):
+        batch_add_version()
+    else:
+        print(dict(zip(ROUTE_LIST, resList)))
 
 # COOKIES = {}
 # user_name = browser.find_element(By.ID, 'loginUserName')
@@ -223,10 +385,8 @@ if __name__ == '__main__':
 
 # print(browser.current_url)
 
-# time.sleep(3)
-
 # print(browser.current_url)
-# time.sleep(1)
+
 # browser.quit()
 
 # def get_cookies():
