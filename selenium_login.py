@@ -37,9 +37,9 @@ route_id_map = {
     'grcy': 'grcyyjslbqjmzv',
     'gxjy': 'gxjyyjslbserpi',
     'ygly': 'yglyyjslbygvea',
-    'wykfd': 'wykcydvqsnb',
     'sy': 'syyjsltbktppz',
-    'socialassistance': '',
+    'wykfd': 'wykcydvqsnb',
+    'socialassistance': 'shjztkklq',
     'fczc': '',
 }
 
@@ -115,7 +115,7 @@ class GftSimular(Simulator):
 
     def script(self, route_name):
         self.app_detail_page(route_name)
-        # self.add_version()
+        self.add_version()
 
     def login(self):
         self.browser.maximize_window()

@@ -9,6 +9,20 @@
 from openpyxl import load_workbook
 
 
+def read2_20():
+    workbook = load_workbook(
+        '/home/zg/Downloads/work/oneThing/2-20一件事事项及经办人员(1).xlsx')
+    sheet1 = workbook.worksheets[0]
+    count = 0
+
+    for row in range(2, 25):
+        code = sheet1.cell(row, 5).value
+        if (code):
+            count = count + 1
+            print('"{}",'.format(code))
+    print(count)
+
+
 def read_excel():
     workbook = load_workbook(
         '/home/zg/Downloads/work/oneThing/中考优待事项编码清单-215.xlsx')
@@ -24,5 +38,5 @@ def read_excel():
 
 
 if __name__ == '__main__':
-
-    read_excel()
+    read2_20()
+    # read_excel()
