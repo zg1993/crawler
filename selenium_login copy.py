@@ -16,13 +16,17 @@ from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 from tools.file_utils import parser_yaml
-from gft.batch_pack import batch_pack, batch_pack_rqsl
+from gft.batch_pack import batch_pack
 
 PROJECT_PATH = None
 CHROME_DRIVER_PATH = None
 DOC_PATH = None
 PACKAGE_PATH = None
+ACCOUNT = None
+PASSWD = None
 
+# package
+ROUTE_LIST = []
 TIMEOUT = 10
 
 # fuzhou [ "gxjychain","grcychain","losejobchain", "sy","zkydchain"]
@@ -52,7 +56,7 @@ route_id_map = {
 
 
 def configure_gft(region='fzs'):
-    global PROJECT_PATH, CHROME_DRIVER_PATH, DOC_PATH, PACKAGE_PATH, TIMEOUT
+    global PROJECT_PATH, CHROME_DRIVER_PATH, DOC_PATH, PACKAGE_PATH, ACCOUNT, PASSWD, ROUTE_LIST, TIMEOUT
     config = parser_yaml('./gft/package_script.yaml')
     gft_config = config['gft']  # GftSimular.name
 
@@ -60,7 +64,8 @@ def configure_gft(region='fzs'):
     CHROME_DRIVER_PATH = gft_config['chrome_driver_path']
     DOC_PATH = gft_config['doc_path']
     PACKAGE_PATH = gft_config['package_path']
-
+    [ACCOUNT, PASSWD] = gft_config['account_passwd'][region]
+    ROUTE_LIST = gft_config['route_list']
     TIMEOUT = gft_config['timeout']
 
 
@@ -94,9 +99,6 @@ class GftSimular(Simulator):
     pressureWord_name = 'pressureWord.doc'
     detectionWord_name = 'detectionWord.xls'
     icon = 'icon.png'
-    success = []
-    fail = []
-    fail_checked = []
 
     def __init__(self) -> None:
         super(GftSimular, self).__init__()
@@ -126,14 +128,14 @@ class GftSimular(Simulator):
         self.app_detail_page(route_name)
         self.add_version()
 
-    def login(self, account, passwd):
+    def login(self):
         self.browser.maximize_window()
         self.browser.get(self.login_url)
         WebDriverWait(self.browser,
                       timeout=TIMEOUT).until(lambda b: b.find_element(
-                          By.ID, 'loginUserName')).send_keys(account)
+                          By.ID, 'loginUserName')).send_keys(ACCOUNT)
         WebDriverWait(self.browser, timeout=TIMEOUT).until(
-            lambda b: b.find_element(By.ID, 'password-text')).send_keys(passwd)
+            lambda b: b.find_element(By.ID, 'password-text')).send_keys(PASSWD)
         WebDriverWait(self.browser,
                       timeout=TIMEOUT).until(lambda b: b.find_element(
                           By.XPATH, '//div[@class="account-btn"]')).click()
@@ -143,10 +145,8 @@ class GftSimular(Simulator):
 
     def app_detail_page(self, route_name):
         self.route_name = route_name
-        if not route_id_map.get(route_name):
-            self.app_id = route_name
-        else:
-            self.app_id = route_id_map.get(route_name)
+        self.app_id = route_id_map.get(route_name)
+
         self.browser.get(self.app_list_url)
         app_id_input = WebDriverWait(
             self.browser, timeout=TIMEOUT).until(lambda b: b.find_element(
@@ -253,12 +253,10 @@ class GftSimular(Simulator):
             if '保存成功' == tip.text:
                 print('{0} 添加成功{1}'.format(self.app_name, version_text))
                 self.submit_review(version_text)
-
             else:
                 print('{0} 添加失败: {1}'.format(self.app_name, tip.text))
         except Exception as e:
             print('{0} 添加失败'.format(self.app_name))
-            self.fail.append(self.app_id)
             print(e)
             print('----')
             #local variable 'tip' referenced before assignment
@@ -301,9 +299,8 @@ class GftSimular(Simulator):
             # e = WebDriverWait(self.browser, timeout=TIMEOUT).until(
             # lambda b: b.find_element(By.XPATH, '//tbody[1]/tr[1]/td[8]"]'))
             print('提交审核成功:{0}，版本号{1}'.format(self.app_name, version_text))
-            self.success.append(self.app_id)
+
         except Exception as e:
-            self.fail_checked.append(self.app_id)
             print(e)
             print('请指定正确的版本')
 
@@ -362,92 +359,61 @@ def batch_add_version():
         time.sleep(60)
 
 
-BASE = {
-    'linchuan': {
-        'account': ['LCQKF', 'Lcqkf@123456'],
-        'route_list': [
-            # 'jszgzrdnshlb',
-            # 'lmzzscjyxkzhfrqslerukr',
-            # 'fgssldjefjtv',
-            'gsfgsbgbadjrqsltckek',
-        ]
-    },
-    'nanfeng': {
-        'account': ['NFXKF', 'Nfxkf@123456'],
-        'route_list': [
-            # 'nfxggcswsxksc',
-            # 'xcyxszdspjysldjrqsltbqzy',
-            'xcyxszdspjyyxdjrqsligpxx',
-            # 'nfxlyzwjyzshf',
-        ]
-    }
-}
-
-
-def rqsl_batch_package():
-    # route_list = ['lmzzscjyxkzhfrqslerukr']
-    project_path = '/home/zg/work/gft-new-item-services'
-    # package_path = os.path.join('/home/zg/Documents/gftPackage', project)
-    package_path = '/home/zg/Documents/gftPackage/rqsl'
-    # batch_pack_rqsl(project_path, package_path, route_list)
-    sum = 0
-    for region, v in BASE.items():
-        route_list = v.get('route_list')
-
-        sum = sum + len(route_list)
-        if len(route_list) != 0:
-            batch_pack_rqsl(project_path, package_path, route_list, region)
-    print('sum: ', sum)
-
-
-def rqsl_batch_add_version():
-    configure_gft('gft')
-    global PROJECT_PATH, PACKAGE_PATH
-    PROJECT_PATH = '/home/zg/work/gft-new-item-services'
-    PACKAGE_PATH = '/home/zg/Documents/gftPackage/rqsl'
-    for region, v in BASE.items():
-        route_list = v.get('route_list')
-        account, passwd = v.get('account')
-        with GftSimular() as s:
-            s.login(account, passwd)
-            for route_name in route_list:
-                # app_id = route_id_map.get(route_name)
-                # if app_id:
-                s.script(route_name)
-            time.sleep(10)
-        print(region, '----end')
-    print('success: ', s.success)
-    print('fail: ', s.fail)
-    print('fail_checked: ', s.fail_checked)
-
-
 if __name__ == '__main__':
     pass
-    # rqsl_batch_package()
-    rqsl_batch_add_version()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--region',
+                        help='指定登录区县(中文首字母缩写)，默认抚州市',
+                        default='fzs')
+    parser.add_argument('--isPack',
+                        help="是否打包，1打包 0不打包",
+                        default='1',
+                        type=int)
+    args = parser.parse_args()
+    region = args.region
+    configure_gft(region)
+    if 'lax' == region:
+        route_id_map = {
+            'zkydchain': 'csfzzxqmley',
+            'grcychain': 'laxtest',
+        }
+    resList = []
+    print('route list: ', ROUTE_LIST)
+    if args.isPack:
+        resList = batch_pack(PROJECT_PATH, PACKAGE_PATH, ROUTE_LIST)
+    if all(resList):
+        batch_add_version()
+        pass
+    else:
+        print(dict(zip(ROUTE_LIST, resList)))
 
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--region',
-    #                     help='指定登录区县(中文首字母缩写)，默认抚州市',
-    #                     default='fzs')
-    # parser.add_argument('--isPack',
-    #                     help="是否打包，1打包 0不打包",
-    #                     default='1',
-    #                     type=int)
-    # args = parser.parse_args()
-    # region = args.region
-    # configure_gft(region)
-    # if 'lax' == region:
-    #     route_id_map = {
-    #         'zkydchain': 'csfzzxqmley',
-    #         'grcychain': 'laxtest',
-    #     }
-    # resList = []
-    # print('route list: ', ROUTE_LIST)
-    # if args.isPack:
-    #     resList = batch_pack(PROJECT_PATH, PACKAGE_PATH, ROUTE_LIST)
-    # if all(resList):
-    #     batch_add_version()
-    #     pass
-    # else:
-    #     print(dict(zip(ROUTE_LIST, resList)))
+# COOKIES = {}
+# user_name = browser.find_element(By.ID, 'loginUserName')
+# user_name.click()
+# user_name.send_keys('LAXKF')
+
+# passwd = browser.find_element(By.ID, 'password-text')
+# passwd.click()
+# passwd.send_keys('Laxkf@123456')
+# # browser.find_element(By.ID, 'passWord').send_keys('laxkf@123456')
+
+# login_button = browser.find_element(By.XPATH, '//div[@class="account-btn"]')
+
+# login_button.click()
+
+# print(browser.get_cookies())
+
+# print(browser.current_url)
+
+# print(browser.current_url)
+
+# browser.quit()
+
+# def get_cookies():
+#     cookies_dict = {}
+#     for item in browser.get_cookies():
+#         print(item)
+#         print(item['name'])
+#         print(item['value'])
+#         cookies_dict[item['name']]
+#     return cookies_dict

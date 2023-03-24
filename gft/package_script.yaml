@@ -6,7 +6,11 @@ gft:
   account_passwd:
     fzs: ["FZSKF", "Fzskf@1234"]
     lax: ["LAXKF", "Laxkf@123456"]
-  # route_list: ["grcy", "qyzgtx"]
-  # route_list: ["grcy", "qyzgtx", "lhjy", "gxjy", "ygly"]
-  route_list: ["grcy", "qyzgtx", "gxjy", "ygly"]
+  # route_list: ["sy"]
+  # route_list: ["losejob", "ygly", "lhjy", "gxjy", "grcy", "sy", "qyzgtx"]
+  # route_list: ["zkydchain", "grcychain"]
+  # route_list: ["gxjychain", "grcychain", "losejobchain"]
+  # route_list: ["gxjychain", "grcychain", "losejobchain", "sy", "zkydchain"]
+  # route_list: ["yglychain", "qyzgtx"]
+  route_list: ["lhjychain", "qyzgtx"]
   timeout: 30
