@@ -4,13 +4,57 @@ gft:
   chrome_driver_path: /home/zg/chromedriver
   doc_path: /home/zg/Downloads/selenium
   account_passwd:
-    fzs: ["FZSKF", "Fzskf@1234"]
-    lax: ["LAXKF", "Laxkf@123456"]
-  # route_list: ["sy"]
-  # route_list: ["losejob", "ygly", "lhjy", "gxjy", "grcy", "sy", "qyzgtx"]
-  # route_list: ["zkydchain", "grcychain"]
-  # route_list: ["gxjychain", "grcychain", "losejobchain"]
-  # route_list: ["gxjychain", "grcychain", "losejobchain", "sy", "zkydchain"]
-  # route_list: ["yglychain", "qyzgtx"]
-  route_list: ["lhjychain", "qyzgtx"]
+    fuzhou: ["FZSKF", "Fzskf@1234"]
+    lean: ["LAXKF", "Laxkf@123456"]
+    guangchang: ['GCXKF', 'Gcxkf@123456']
+    yihuang: ['YHXKF', 'Yhxkf@123456']
+    linchuan: ['LCQKF', 'Lcqkf@123456']
+    nanfeng: ['NFXKF', 'Nfxkf@123456']
+    jinxi: ['FZJXXKF', 'Fzjxxkf@123456']
+    nancheng: ['FZNCXKF', 'Fzncxkf@123456']
+    gaoxin: ['FZSGXKFQKF', 'Fzsgxkf@123456']
+    chongren: ['CRXKF', 'Crxkf@123456']
+    dongxiang: ['DXQKF', 'Dxqkf@123456']
+    zixi: ['ZXXKF', 'Zxxkf@123456']
+    lichuan: ['LCXKF', 'Lcxkf@123456']
+    # donglin: ['FZDLXQKF', 'Fzdlxqkf@123456']
+  route_list:
+    fuzhou: [ 
+      # "gxjychain",
+      # "grcychain",
+      # "losejobchain",
+      # "sy",
+      # "zkydchain",
+      # "yglychain",
+      "lhjychain",
+      # "qyzgtx",
+      ]
+    lean: []
+    guangchang: []
+    yihuang: []
+    linchuan: []
+    nanfeng: []
+    jinxi: []
+    nancheng: []
+    gaoxin: []
+    chongren: []
+    dongxiang: []
+    zixi: []
+    lichuan: []
+    donglin: []
+  app_list:
+    fuzhou: []
+    lean: []
+    guangchang: []
+    yihuang: []
+    linchuan: []
+    nanfeng: []
+    jinxi: []
+    nancheng: []
+    gaoxin: []
+    chongren: []
+    dongxiang: []
+    zixi: []
+    lichuan: []
+    donglin: []
   timeout: 30

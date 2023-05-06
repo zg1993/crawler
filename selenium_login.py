@@ -119,12 +119,21 @@ class GftSimular(Simulator):
 
     def handle(self, route_name):
         self.login()
-        self.app_detail_page(route_name)
-        self.add_version()
+        res = self.app_detail_page(route_name)
+        print(res)
+        if res:
+            res.click()
+        else:
+            self.add_version()
 
     def script(self, route_name):
-        self.app_detail_page(route_name)
-        self.add_version()
+        res = self.app_detail_page(route_name)
+        print(res)
+        if res:
+            # self.perfect_app()
+            print(self.route_name, '---')
+        else:
+            self.add_version()
 
     def login(self, account, passwd):
         self.browser.maximize_window()
@@ -183,16 +192,78 @@ class GftSimular(Simulator):
         self.app_name = title_div.text[5:]
         print(self.app_name)
         print(self.app_id)
-
-        detail_btn.click()
-        WebDriverWait(self.browser, timeout=TIMEOUT).until(
-            lambda b: b.find_element(By.XPATH, '//tbody[1]/tr[1]/td[1]'))
+        status_div = WebDriverWait(self.browser, TIMEOUT).until(
+            lambda b: b.find_element(By.XPATH, '//div[text()=" 状态： "]'))
+        if '未完善应用' in status_div.text:
+            return True
+        else:
+            detail_btn.click()
+            WebDriverWait(self.browser, timeout=TIMEOUT).until(
+                lambda b: b.find_element(By.XPATH, '//tbody[1]/tr[1]/td[1]'))
+        # try:
+        #     perfect_btn = WebDriverWait(self.browser, TIMEOUT).until(
+        #         lambda b: b.find_element(By.XPATH, '//span[text()="完善应用"]/..'))
+        #     return perfect_btn
+        # except Exception as e:
+        #     detail_btn.click()
+        #     WebDriverWait(self.browser, timeout=TIMEOUT).until(
+        #         lambda b: b.find_element(By.XPATH, '//tbody[1]/tr[1]/td[1]'))
 
     def perfect_app(self):
-        pass
-        # : e = b.find_element(By.XPATH, '//ul[@class="ant-card-actions"]//button[@class="ant-btn ant-btn-link"]/span[text()="完
+        WebDriverWait(self.browser, TIMEOUT).until(lambda b: b.find_element(
+            By.XPATH, '//span[text()="完善应用"]/..')).click()
+        time.sleep(2)
+        submit_btn = WebDriverWait(
+            self.browser, timeout=TIMEOUT
+        ).until(lambda b: b.find_element(
+            By.XPATH,
+            '//button[@class="ant-btn ant-btn-primary"]/span[text()="提 交"]/..')
+                )
+        explainWord_path = os.path.join(self.doc_path, self.explainWord_name)
+        pressureWord_path = os.path.join(self.doc_path, self.pressureWord_name)
+        detectionWord_path = os.path.join(self.doc_path,
+                                          self.detectionWord_name)
+        js = '''
+        document.getElementById('explainWordFile').style.display = 'block';
+        document.getElementById('pressureWordFile').style.display = 'block';
+        document.getElementById('detectionWordFile').style.display = 'block'
+        document.getElementById('zipFile').style.display = 'block'
+        '''
 
-    #  ...: 善应用"]/..')
+        self.browser.find_element(
+            By.ID, 'explainWordFile').send_keys(explainWord_path)
+        self.browser.find_element(
+            By.ID, 'pressureWordFile').send_keys(pressureWord_path)
+        self.browser.find_element(
+            By.ID, 'detectionWordFile').send_keys(detectionWord_path)
+
+        self.browser.execute_script(js)
+        #languageType
+        #zipType
+        # self.browser.find_element(By.ID, 'zipFile').send_keys(
+        #     '/home/zg/Documents/gftPackage/{}.zip'.format(d[self.app_id]))
+        self.browser.find_element(By.ID, 'zipFile').send_keys(
+            os.path.join(PACKAGE_PATH, self.route_name + '.zip'))
+        self.browser.find_element(By.ID, 'updateExplain').send_keys('test')
+        submit_btn.click()
+        try:
+            tip = WebDriverWait(
+                self.browser, timeout=TIMEOUT
+            ).until(lambda b: b.find_element(
+                By.XPATH,
+                '//div[@class="ant-notification-notice-description" or @class="ant-message-custom-content ant-message-success"]'
+            ))
+            # 该应用此版本号已存在
+            # print(tip.text)
+            if '保存成功' == tip.text:
+                print('{0} 添加成功'.format(self.app_name))
+            else:
+                print('{0} 添加失败: {1}'.format(self.app_name, tip.text))
+        except Exception as e:
+            print('{0} 添加失败'.format(self.app_name))
+            self.fail.append(self.app_id)
+            print(e)
+            print('----')
 
     def add_version(self):
         # versionNo_input
@@ -255,6 +326,7 @@ class GftSimular(Simulator):
                 self.submit_review(version_text)
 
             else:
+                self.fail.append(self.app_id)
                 print('{0} 添加失败: {1}'.format(self.app_name, tip.text))
         except Exception as e:
             print('{0} 添加失败'.format(self.app_name))
@@ -363,24 +435,85 @@ def batch_add_version():
 
 
 BASE = {
-    'linchuan': {
-        'account': ['LCQKF', 'Lcqkf@123456'],
+    # 'lean': {
+    #     'account': ['LAXKF', 'Laxkf@123456'],
+    #     'route_list': [
+    #         'csyyosvlc',
+    #     ]
+    # },
+    'lean': {
+        'account': ['LAXKF', 'Laxkf@123456'],
         'route_list': [
-            # 'jszgzrdnshlb',
-            # 'lmzzscjyxkzhfrqslerukr',
-            # 'fgssldjefjtv',
-            'gsfgsbgbadjrqsltckek',
+            'yzymhxxbgrqslylqco',
+            'laxggcswsxksc',
+            'gsbgdjnvqdf',
+            'fppzhdrqslvrulw',
         ]
     },
-    'nanfeng': {
-        'account': ['NFXKF', 'Nfxkf@123456'],
+    'guangchang': {
+        'account': ['GCXKF', 'Gcxkf@123456'],
         'route_list': [
-            # 'nfxggcswsxksc',
-            # 'xcyxszdspjysldjrqsltbqzy',
-            'xcyxszdspjyyxdjrqsligpxx',
-            # 'nfxlyzwjyzshf',
+            'czwsprpsgwxkrqslvrznu',
+            'lmzzscjyxkzhfrqslwnejl',
+            'lszyldsprqslklqef',
+            'kckckchgxjsgczyhzzszyldshrqslzkgbv',
         ]
-    }
+    },
+    'yihuang': {
+        'account': ['YHXKF', 'Yhxkf@123456'],
+        'route_list': [
+            'jzgcsgxkzhfhsgxmtpwlb',
+            'jsydghxkzrqsldmtld',
+            'yhcsglgrwjcsdlsp',
+            'yhxqxnscjsxmstbcfasp',
+            'yihqxnqsq',
+        ]
+    },
+    # 'linchuan': {
+    #     'account': ['LCQKF', 'Lcqkf@123456'],
+    #     'route_list': [
+    #         'jszgzrdnshlb',
+    #         'lmzzscjyxkzhfrqslerukr',
+    #         'fgssldjefjtv',
+    #         'gsfgsbgbadjrqsltckek',
+    #     ]
+    # },
+    # 'nanfeng': {
+    #     'account': ['NFXKF', 'Nfxkf@123456'],
+    #     'route_list': [
+    #         'nfxggcswsxksc',
+    #         'xcyxszdspjysldjrqsltbqzy',
+    #         'xcyxszdspjyyxdjrqsligpxx',
+    #         'nfxlyzwjyzshf',
+    #     ]
+    # },
+    # 'jinxi': {
+    #     'account': ['FZJXXKF', 'Fzjxxkf@123456'],
+    #     'route_list': [
+    #         'jxxdtljlhsgjjxjy',
+    #         'nyjxzzyhzygczfsdnjsgzrrdhdjclrqslyxpaz',
+    #         'jxxtljlhsgjnj',
+    #         'jsgcjgghtjhsrqslpxntr',
+    #     ]
+    # },
+    'nancheng': {
+        'account': ['FZNCXKF', 'Fzncxkf@123456'],
+        'route_list': [
+            # 'ncyxgsfdzsbgdj',
+            # 'yxgsfddbrbgdj',
+            # 'ncyxgssldj',
+            # 'ncnmzyhzskydj',
+        ]
+    },
+    'gaoxin': {
+        'account': ['FZSGXKFQKF', 'Fzsgxkf@123456'],
+        'route_list': [
+            # 'shttfrxksplqnyw',
+            # 'nzgssldjeeknd',
+            # 'nzgsbgdjrofec',
+            # 'nzgszxdjrqeta',
+        ]
+    },
 }
 
 
@@ -408,13 +541,16 @@ def rqsl_batch_add_version():
     for region, v in BASE.items():
         route_list = v.get('route_list')
         account, passwd = v.get('account')
-        with GftSimular() as s:
-            s.login(account, passwd)
-            for route_name in route_list:
-                # app_id = route_id_map.get(route_name)
-                # if app_id:
-                s.script(route_name)
-            time.sleep(10)
+        if len(route_list) == 0:
+            pass
+        else:
+            with GftSimular() as s:
+                s.login(account, passwd)
+                for route_name in route_list:
+                    # app_id = route_id_map.get(route_name)
+                    # if app_id:
+                    s.script(route_name)
+                time.sleep(10)
         print(region, '----end')
     print('success: ', s.success)
     print('fail: ', s.fail)

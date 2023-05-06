@@ -4,6 +4,7 @@ import time
 import os
 import traceback
 import argparse
+from tools.file_utils import parser_yaml
 # import functools
 # from matplotlib.dates import SecondLocator
 
@@ -12,22 +13,23 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver import ActionChains
 from selenium.webdriver.support.wait import WebDriverWait
-# from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support import expected_conditions as EC
 
-from tools.file_utils import parser_yaml
 from gft.batch_pack import batch_pack
 
+BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+CONFIG_FILE_PATH = os.path.join(BASE_PATH, 'gft/package_script.yaml')
 PROJECT_PATH = None
 CHROME_DRIVER_PATH = None
 DOC_PATH = None
 PACKAGE_PATH = None
-ACCOUNT = None
-PASSWD = None
+ACCOUNT_PASSWD = {}
+ROUTE_LIST = {}
+APP_LIST = {}
 
 # package
-ROUTE_LIST = []
-TIMEOUT = 10
+# ROUTE_LIST = []
 
 # fuzhou [ "gxjychain","grcychain","losejobchain", "sy","zkydchain"]
 route_id_map = {
@@ -37,35 +39,40 @@ route_id_map = {
     'grcy': 'grcyyjslbqjmzv',
     'gxjy': 'gxjyyjslbserpi',
     'ygly': 'yglyyjslbygvea',
-    'sy': 'syyjsltbktppz',
     'wykfd': 'wykcydvqsnb',
     'socialassistance': 'shjztkklq',
     'fczc': '',
     # chain
+    'sy': 'syyjsltbktppz',
     'gxjychain': 'gxjyyjslbserpi',
     'grcychain': 'grcyyjslbqjmzv',
     'losejobchain': 'syyjslbqjacr',
     'zkydchain': 'zkydyjslbzczns',
+    'zkydchainminority': 'ssmzzkjfyjsemhff',
+    'zkydchaintaiwan': 'tjkszkjfyjszcexh',
     # 3-15
     'yglychain': 'yglyyjslbygvea',
-    'qyzgtxchain': 'qyzgtxyjslbkzrgk',
+    'qyzgtx': 'qyzgtxyjslbkzrgk',
+    'qyzgtxearly': 'qyzgtqtxyjslbqbupb',
     'lhjychain': 'lhjyyjslbkcltl',
     # test
-    'test': 'laxtest'
+    'test': 'laxtest',
+    # 4-10
+    'socialAssistance': 'shjztkklq'
 }
 
 
-def configure_gft(region='fzs'):
-    global PROJECT_PATH, CHROME_DRIVER_PATH, DOC_PATH, PACKAGE_PATH, ACCOUNT, PASSWD, ROUTE_LIST, TIMEOUT
-    config = parser_yaml('./gft/package_script.yaml')
+def configure_gft(file_path=CONFIG_FILE_PATH):
+    global PROJECT_PATH, CHROME_DRIVER_PATH, DOC_PATH, PACKAGE_PATH, ROUTE_LIST, TIMEOUT, ACCOUNT_PASSWD, APP_LIST
+    config = parser_yaml(file_path)
     gft_config = config['gft']  # GftSimular.name
-
     PROJECT_PATH = gft_config['project_path']
     CHROME_DRIVER_PATH = gft_config['chrome_driver_path']
     DOC_PATH = gft_config['doc_path']
     PACKAGE_PATH = gft_config['package_path']
-    [ACCOUNT, PASSWD] = gft_config['account_passwd'][region]
+    ACCOUNT_PASSWD = gft_config['account_passwd']
     ROUTE_LIST = gft_config['route_list']
+    APP_LIST = gft_config['app_list']
     TIMEOUT = gft_config['timeout']
 
 
@@ -128,20 +135,46 @@ class GftSimular(Simulator):
         self.app_detail_page(route_name)
         self.add_version()
 
-    def login(self):
+    def logout(self):
+        actions = ActionChains(self.browser)
+        actions.move_to_element(
+            self._find('//div[@class="actions-btn"]')).click()
+        actions.perform()
+        self._find('//span[text()="退出登录"]').click()
+        WebDriverWait(self.browser, TIMEOUT).until(
+            EC.element_to_be_clickable(
+                (By.XPATH,
+                 '//div[@class="ant-modal-body"]//span[text()="确 定"]/..'
+                 ))).click()
+        WebDriverWait(self.browser, TIMEOUT).until(EC.element_to_be_clickable(
+                (By.XPATH,
+                 '//div[@class="account-btn"]'))).click()
+        print('logout')
+
+    def login(self, account, passwd):
         self.browser.maximize_window()
         self.browser.get(self.login_url)
         WebDriverWait(self.browser,
                       timeout=TIMEOUT).until(lambda b: b.find_element(
-                          By.ID, 'loginUserName')).send_keys(ACCOUNT)
+                          By.ID, 'loginUserName')).send_keys(account)
         WebDriverWait(self.browser, timeout=TIMEOUT).until(
-            lambda b: b.find_element(By.ID, 'password-text')).send_keys(PASSWD)
+            lambda b: b.find_element(By.ID, 'password-text')).send_keys(passwd)
         WebDriverWait(self.browser,
                       timeout=TIMEOUT).until(lambda b: b.find_element(
                           By.XPATH, '//div[@class="account-btn"]')).click()
-        WebDriverWait(self.browser, timeout=TIMEOUT).until(
-            lambda b: b.find_element(By.XPATH, '//span[text()="工作"]'))
-        print('login success')
+        # WebDriverWait(
+        #     self.browser, timeout=2
+        # ).until(lambda b: b.find_element(
+        #     By.XPATH,
+        #     '//div[text()="用户名或密码不正确，注意区分大小写" or text()="Username or password error"]'
+        # ))
+        try:
+            WebDriverWait(self.browser, timeout=TIMEOUT).until(
+                EC.element_to_be_clickable(
+                    (By.XPATH, '//div[@class="actions-btn"]'))).click()
+            print('login success')
+        except Exception as e:
+            print('login failed', e)
 
     def app_detail_page(self, route_name):
         self.route_name = route_name
@@ -359,44 +392,59 @@ def batch_add_version():
         time.sleep(60)
 
 
+def test_login():
+    with GftSimular() as s:
+        for region, v in ACCOUNT_PASSWD.items():
+            print(region, v)
+            account, passwd = v
+            s.login(account, passwd)
+            s.logout()
+
+
 if __name__ == '__main__':
-    pass
+    configure_gft()
     parser = argparse.ArgumentParser()
-    parser.add_argument('--region',
-                        help='指定登录区县(中文首字母缩写)，默认抚州市',
-                        default='fzs')
-    parser.add_argument('--isPack',
-                        help="是否打包，1打包 0不打包",
-                        default='1',
-                        type=int)
+    parser.add_argument(
+        '--noPack',
+        help="不打包",
+        action='store_true',
+        default=True,
+    )
+    parser.add_argument(
+        '--login',
+        help='测试赣服通各个区县登录账号密码是否正确',
+        default=False,
+        action='store_true',
+    )
     args = parser.parse_args()
-    region = args.region
-    configure_gft(region)
-    if 'lax' == region:
-        route_id_map = {
-            'zkydchain': 'csfzzxqmley',
-            'grcychain': 'laxtest',
-        }
-    resList = []
-    print('route list: ', ROUTE_LIST)
-    if args.isPack:
-        resList = batch_pack(PROJECT_PATH, PACKAGE_PATH, ROUTE_LIST)
-    if all(resList):
-        batch_add_version()
-        pass
+    if args.login:
+        test_login()
     else:
-        print(dict(zip(ROUTE_LIST, resList)))
+        configure_gft()
+        if 'lax' == 1:
+            route_id_map = {
+                'zkydchain': 'csfzzxqmley',
+                'grcychain': 'laxtest',
+            }
+        resList = []
+        print('route list: ', ROUTE_LIST)
+        if args.noPack:
+            pass
+            # resList = batch_pack(PROJECT_PATH, PACKAGE_PATH, ROUTE_LIST)
+        if all(resList):
+            # batch_add_version()
+            pass
+        else:
+            print(dict(zip(ROUTE_LIST, resList)))
 
 # COOKIES = {}
 # user_name = browser.find_element(By.ID, 'loginUserName')
 # user_name.click()
 # user_name.send_keys('LAXKF')
-
 # passwd = browser.find_element(By.ID, 'password-text')
 # passwd.click()
 # passwd.send_keys('Laxkf@123456')
 # # browser.find_element(By.ID, 'passWord').send_keys('laxkf@123456')
-
 # login_button = browser.find_element(By.XPATH, '//div[@class="account-btn"]')
 
 # login_button.click()
