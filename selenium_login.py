@@ -53,7 +53,7 @@ route_id_map = {
 
 def configure_gft(region='fzs'):
     global PROJECT_PATH, CHROME_DRIVER_PATH, DOC_PATH, PACKAGE_PATH, TIMEOUT
-    config = parser_yaml('./gft/package_script.yaml')
+    config = parser_yaml('./gft/config/package_script.yaml')
     gft_config = config['gft']  # GftSimular.name
 
     PROJECT_PATH = gft_config['project_path']

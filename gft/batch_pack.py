@@ -17,7 +17,7 @@ VITE_CONFIG = '/home/zg/work/gft-item-services/vite.config.ts'
 # ]
 # ROUTE_LIST = ['grcy', 'lhjy', 'gxjy', 'ygly']
 # ROUTE_LIST = ['sy']
-ROUTE_LIST = ['losejob']
+ROUTE_LIST = ['losejobchain']
 
 
 def replace_content(file_path, line_number, replace_str):

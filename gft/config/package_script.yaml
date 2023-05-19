@@ -1,8 +1,8 @@
-gft:
-  project_path: /home/zg/work/gft-item-services
+common:
   package_path: /home/zg/Documents/gftPackage
   chrome_driver_path: /home/zg/chromedriver
   doc_path: /home/zg/Downloads/selenium
+  timeout: 30
   account_passwd:
     fuzhou: ["FZSKF", "Fzskf@1234"]
     lean: ["LAXKF", "Laxkf@123456"]
@@ -17,8 +17,19 @@ gft:
     dongxiang: ['DXQKF', 'Dxqkf@123456']
     zixi: ['ZXXKF', 'Zxxkf@123456']
     lichuan: ['LCXKF', 'Lcxkf@123456']
-    # donglin: ['FZDLXQKF', 'Fzdlxqkf@123456']
-  route_list:
+    donglin: ['FZDLXQKF', 'Fzdlxqkf@123456']
+vue:
+  project_path: /home/zg/work/gft-item-services
+  build_command: npm run dev
+  route_dict:
+    fuzhou: [ 
+      "fztbdcdblb",
+      ]
+    
+compress-package-zg:
+  project_path: /home/zg/work/gft-item-services
+  build_command: yarn build
+  route_dict:
     fuzhou: [ 
       # "gxjychain",
       # "grcychain",
@@ -26,10 +37,10 @@ gft:
       # "sy",
       # "zkydchain",
       # "yglychain",
-      "lhjychain",
+      # "lhjychain",
       # "qyzgtx",
       ]
-    lean: []
+    lean: ['zkydchaincombine']
     guangchang: []
     yihuang: []
     linchuan: []
@@ -42,7 +53,7 @@ gft:
     zixi: []
     lichuan: []
     donglin: []
-  app_list:
+  app_dict:
     fuzhou: []
     lean: []
     guangchang: []
@@ -57,4 +68,4 @@ gft:
     zixi: []
     lichuan: []
     donglin: []
-  timeout: 30
+  

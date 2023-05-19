@@ -18,8 +18,11 @@ from selenium.webdriver.support import expected_conditions as EC
 
 from gft.batch_pack import batch_pack
 
+
+
+
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
-CONFIG_FILE_PATH = os.path.join(BASE_PATH, 'gft/package_script.yaml')
+CONFIG_FILE_PATH = os.path.join(BASE_PATH, 'gft/config/package_script.yaml')
 PROJECT_PATH = None
 CHROME_DRIVER_PATH = None
 DOC_PATH = None
@@ -34,7 +37,7 @@ APP_LIST = {}
 # fuzhou [ "gxjychain","grcychain","losejobchain", "sy","zkydchain"]
 route_id_map = {
     'lhjy': 'lhjyyjslbkcltl',
-    'qyzgtx': 'qyzgtxyjslbkzrgk',
+    # 'qyzgtx': 'qyzgtxyjslbkzrgk',
     'losejob': 'syyjslbqjacr',
     'grcy': 'grcyyjslbqjmzv',
     'gxjy': 'gxjyyjslbserpi',
@@ -71,8 +74,8 @@ def configure_gft(file_path=CONFIG_FILE_PATH):
     DOC_PATH = gft_config['doc_path']
     PACKAGE_PATH = gft_config['package_path']
     ACCOUNT_PASSWD = gft_config['account_passwd']
-    ROUTE_LIST = gft_config['route_list']
-    APP_LIST = gft_config['app_list']
+    # ROUTE_LIST = gft_config['route_list']
+    # APP_LIST = gft_config['app_list']
     TIMEOUT = gft_config['timeout']
 
 
@@ -134,6 +137,10 @@ class GftSimular(Simulator):
     def script(self, route_name):
         self.app_detail_page(route_name)
         self.add_version()
+    
+    def script_temp(self, ID):
+        self.app_detail_page(ID, ID)
+        self.add_version()
 
     def logout(self):
         actions = ActionChains(self.browser)
@@ -146,6 +153,8 @@ class GftSimular(Simulator):
                 (By.XPATH,
                  '//div[@class="ant-modal-body"]//span[text()="确 定"]/..'
                  ))).click()
+        print('-')
+        # 确保退出到登录界面
         WebDriverWait(self.browser, TIMEOUT).until(EC.element_to_be_clickable(
                 (By.XPATH,
                  '//div[@class="account-btn"]'))).click()
@@ -176,10 +185,12 @@ class GftSimular(Simulator):
         except Exception as e:
             print('login failed', e)
 
-    def app_detail_page(self, route_name):
+    def app_detail_page(self, route_name, ID=None):
         self.route_name = route_name
+        # 包名和应用标识的对应关系（不同区县不同项目可能有差入），
         self.app_id = route_id_map.get(route_name)
-
+        if ID:
+            self.app_id = ID
         self.browser.get(self.app_list_url)
         app_id_input = WebDriverWait(
             self.browser, timeout=TIMEOUT).until(lambda b: b.find_element(
@@ -401,6 +412,20 @@ def test_login():
             s.logout()
 
 
+def temp_add_version():
+    print('temp add version')
+    package_list = [
+    'bdcesfzydj',
+    # 'fztbdcdblb',
+    'fztysfywsq',
+    ]
+    with GftSimular() as s:
+        s.login('FZSKF','Fzskf@1234')
+        for i in package_list:
+            s.script_temp(i)
+
+        time.sleep(60)
+
 if __name__ == '__main__':
     configure_gft()
     parser = argparse.ArgumentParser()
@@ -418,9 +443,9 @@ if __name__ == '__main__':
     )
     args = parser.parse_args()
     if args.login:
-        test_login()
+        # test_login()
+        temp_add_version()
     else:
-        configure_gft()
         if 'lax' == 1:
             route_id_map = {
                 'zkydchain': 'csfzzxqmley',
@@ -437,31 +462,3 @@ if __name__ == '__main__':
         else:
             print(dict(zip(ROUTE_LIST, resList)))
 
-# COOKIES = {}
-# user_name = browser.find_element(By.ID, 'loginUserName')
-# user_name.click()
-# user_name.send_keys('LAXKF')
-# passwd = browser.find_element(By.ID, 'password-text')
-# passwd.click()
-# passwd.send_keys('Laxkf@123456')
-# # browser.find_element(By.ID, 'passWord').send_keys('laxkf@123456')
-# login_button = browser.find_element(By.XPATH, '//div[@class="account-btn"]')
-
-# login_button.click()
-
-# print(browser.get_cookies())
-
-# print(browser.current_url)
-
-# print(browser.current_url)
-
-# browser.quit()
-
-# def get_cookies():
-#     cookies_dict = {}
-#     for item in browser.get_cookies():
-#         print(item)
-#         print(item['name'])
-#         print(item['value'])
-#         cookies_dict[item['name']]
-#     return cookies_dict
