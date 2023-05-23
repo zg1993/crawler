@@ -11,13 +11,17 @@ import traceback
 import argparse
 import sys
 from tools.file_utils import parser_yaml
-from gft.config.package_to_id import PACKAGE_TO_ID, set_item ,SAVE_PATH_TO_ID
+from gft.config.package_to_id import PACKAGE_TO_ID, set_item ,SAVE_PATH_TO_ID, dump_file,load_file
 
 BASE_PATH = os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))  # 当前项目路径
 
+JSON_PATH = os.path.join(BASE_PATH, 'gft/config/path_to_id.json')
+
 CONFIG_YAML = parser_yaml(
     os.path.join(BASE_PATH, 'gft/config/package_script.yaml'))
+
+
 
 # app_id 和 包的完整路径对应关系：提供给selenium simular跑脚本
 # SAVE_PATH_TO_ID = {} 
@@ -55,6 +59,8 @@ def check_packaged(package_path, route_dict):
             region_package_path = os.path.join(package_path, region)
             print('start check "{0}" package: {1}'.format(region, route_list))
             package_count = len(os.listdir(region_package_path))
+            print('package_count', package_count)
+            print('len(route_list)', len(route_list))
             assert package_count == len(route_list)
             print(region_package_path)
             os.system('ls -al {} | grep zip'.format(region_package_path))
@@ -90,6 +96,10 @@ def modify_project_file_vue(project_path, package_name):
     pass
     assert 0
 
+def modify_project_file_yc(project_path, package_name):
+    vite_ts_file_path = os.path.join(project_path, 'vite.config.ts')
+    replace_content(vite_ts_file_path, 'outDir', package_name)
+
 
 # 打包并移动到对应地区的文件夹
 def pack(project_path, package_path, package_name, project_branch_name, build_command):
@@ -97,6 +107,8 @@ def pack(project_path, package_path, package_name, project_branch_name, build_co
         modify_project_file(project_path, package_name)
     elif 'vue' == project_branch_name:
         modify_project_file_vue(project_path, package_name)
+    elif 'yc' == project_branch_name:
+        modify_project_file_yc(project_path, package_name)
     else:
         print('error!!! please input correct project name')
         return
@@ -110,11 +122,14 @@ def pack(project_path, package_path, package_name, project_branch_name, build_co
         # res = subprocess.check_output(['yarn', 'build:test'], encoding='utf-8')
         if 'Done in' in res:
             print('build success')
-            if not os.path.exists(package_name + '.zip'):
-                os.system('zip -r {0}.zip {0}/'.format(package_name))
-            else:
-                print('old package: {}'.format(package_name))
-            os.system('rm -rf {}'.format(package_name))
+            if 'compress-package-zg' == project_branch_name:
+                if not os.path.exists(package_name + '.zip'):
+                    os.system('zip -r {0}.zip {0}/'.format(package_name))
+                else:
+                    print('old package: {}'.format(package_name))
+                os.system('rm -rf {}'.format(package_name))
+            elif 'yc' == project_branch_name:
+                os.system('rm -rf {}'.format(package_name))
             os.system('mv {0}.zip {1}'.format(package_name, package_path))
             return True
     except subprocess.CalledProcessError as _:
@@ -142,7 +157,7 @@ def batch_pack(project_path,
             # app_id = region_package_to_id[route]
             # full_path = os.path.join(region_package_path, route)
             # SAVE_PATH_TO_ID[app_id] = full_path
-            set_item(region, route, region_package_path)
+            set_item(region, route, region_package_path,project_branch_name)
             res.append(
                 pack(project_path, region_package_path, route,
                      project_branch_name, build_command))
@@ -152,6 +167,7 @@ def batch_pack(project_path,
         print('batch pack successed!')
     else:
         print('batch pack failed!')
+    dump_file(JSON_PATH)
 
 
 if __name__ == '__main__':
@@ -166,3 +182,4 @@ if __name__ == '__main__':
     build_command = CONFIG_YAML[project_branch_name]['build_command']
     batch_pack(project_path, package_path, project_branch_name, build_command)
     print('---', SAVE_PATH_TO_ID)
+    print('load', load_file(JSON_PATH))

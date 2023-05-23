@@ -18,6 +18,24 @@ common:
     zixi: ['ZXXKF', 'Zxxkf@123456']
     lichuan: ['LCXKF', 'Lcxkf@123456']
     donglin: ['FZDLXQKF', 'Fzdlxqkf@123456']
+yc:
+  project_path: /home/zg/work/gft-new-yc-item
+  build_command: yarn build
+  route_dict:
+    fuzhou: []
+    lean: []
+    guangchang: []
+    yihuang: []
+    linchuan: []
+    nanfeng: []
+    jinxi: []
+    nancheng: []
+    gaoxin: []
+    chongren: []
+    dongxiang: []
+    zixi: ['zxxmbxxsqhb']
+    lichuan: []
+    donglin: []
 vue:
   project_path: /home/zg/work/gft-item-services
   build_command: npm run dev
@@ -31,10 +49,10 @@ compress-package-zg:
   build_command: yarn build
   route_dict:
     fuzhou: [ 
-      # "gxjychain",
-      # "grcychain",
-      # "losejobchain",
-      # "sy",
+      "socialassistance",
+      # "qyzgtxcombine",
+      # "qyzgtx",
+      # "qyzgtxearly",
       # "zkydchain",
       # "yglychain",
       # "lhjychain",
