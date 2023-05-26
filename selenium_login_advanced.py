@@ -181,6 +181,10 @@ class GftSimular(Simulator):
             print('login success')
         except Exception as e:
             print('login failed', e)
+    
+    def app_detail_page_by_name(self, app_name):
+        pass
+
 
     def app_detail_page(self, app_id, package_path):
         self.app_id = app_id
@@ -337,10 +341,24 @@ class GftSimular(Simulator):
             # e = WebDriverWait(self.browser, timeout=TIMEOUT).until(
             # lambda b: b.find_element(By.XPATH, '//tbody[1]/tr[1]/td[8]"]'))
             print('提交审核成功:{0}，版本号{1}'.format(self.app_name, version_text))
-
         except Exception as e:
             print(e)
             print('请指定正确的版本')
+
+    def generate_yc_setting(self, app_name):
+        res = {
+            'appId':'',
+            'itemCode':'',
+            
+            'info':'',
+            'requirement':'',
+            'law':'',
+            'process':'',
+            'uploadMaterial':'',
+            'online':'',
+        }
+
+        return res
 
     def _count_version(self, version):
         if (5 == len(version)):
