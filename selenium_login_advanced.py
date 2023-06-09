@@ -131,8 +131,11 @@ class GftSimular(Simulator):
         ActionChains(self.browser).double_click(input_element).perform()
         input_element.send_keys(text)
 
-    def script(self, *args):
-        self.app_detail_page(*args)
+    def test(self, *args, **kwargs):
+        self.app_detail_page(*args, **kwargs)
+
+    def script(self, *args, **kwargs):
+        self.app_detail_page(*args, **kwargs)
         self.add_version()
 
     def script_temp(self, ID):
@@ -181,10 +184,12 @@ class GftSimular(Simulator):
             print('login success')
         except Exception as e:
             print('login failed', e)
-    
-    def app_detail_page_by_name(self, app_name):
+
+    def search_page(self, app_id, package_path):
         pass
 
+    def app_detail_page_by_name(self, app_name):
+        pass
 
     def app_detail_page(self, app_id, package_path):
         self.app_id = app_id
@@ -347,15 +352,14 @@ class GftSimular(Simulator):
 
     def generate_yc_setting(self, app_name):
         res = {
-            'appId':'',
-            'itemCode':'',
-            
-            'info':'',
-            'requirement':'',
-            'law':'',
-            'process':'',
-            'uploadMaterial':'',
-            'online':'',
+            'appId': '',
+            'itemCode': '',
+            'info': '',
+            'requirement': '',
+            'law': '',
+            'process': '',
+            'uploadMaterial': '',
+            'online': '',
         }
 
         return res
@@ -376,27 +380,16 @@ class GftSimular(Simulator):
         return version_span.text
 
 
-def test(app_id='dzzzdy', max_count=0):
-    failed_id_dict = {}
-    failed_id = []
-    count = 0
-    while True:
-        if (count > max_count):
-            break
-        try:
-            with GftSimular() as s:
-                s.handle(app_id)
-        except Exception as e:
-            traceback.print_exc()
-            print('-')
-            print(count)
-            if (count == max_count):
-                failed_id.append(app_id)
-                failed_id_dict[app_id] = e
-        finally:
-            count = count + 1
-    print(failed_id)
-    print(failed_id_dict)
+def test(region_to_packages):
+    for region, packages in region_to_packages.items():
+        account, passwd = ACCOUNT_PASSWD[region]
+        print('login {} account: '.format(region), account, passwd)
+        with GftSimular() as s:
+            s.login(account, passwd)
+            for app_id, packages_path in packages.items():
+                s.test(app_id, packages_path)
+                print(app_id, packages_path)
+            time.sleep(10)
 
 
 def batch_add_version_advanced(region_to_packages):
@@ -450,6 +443,7 @@ def wechat():
 
 
 if __name__ == '__main__':
+    # example: python ~/work/crawler/selenium_login_advanced.py --login --project=vue
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--noPack',
@@ -470,7 +464,23 @@ if __name__ == '__main__':
     configure_gft(project_name=args.project)
     if args.login:
         # test_login()
-        temp_add_version()
+        # temp_add_version() # gft-vue 不动产办理临时使用
+        # test start
+        load_json = load_file(JSON_PATH)
+        print('load_json:', load_json)
+        if args.noPack:
+            test(load_json)
+        else:
+            batch_pack(PROJECT_PATH, PACKAGE_PATH, args.project, BUILD_COMMAND)
+            confirm = input('please "y" or "Y" continue: ')
+            if confirm.lower() == 'y':
+                # add version
+                print('load', load_file(JSON_PATH))
+                test(load_json)
+                print(wechat())
+            else:
+                print('end')
+        # end
     else:
         if args.noPack:
             load_json = load_file(JSON_PATH)

@@ -35,10 +35,13 @@ PACKAGE_TO_ID = {
         'qyzgtxearly': 'qyzgtqtxyjslbqbupb', # 企业职工提前退休一件事
         # test
         'test': 'laxtest',
+        #公积金
+        'buyHPF':'gftqgjjyjsfwlcwjn',
+        'rentHPF':'zftqgjjyjsfwxsdjb',
     },
     'lean': {
         # test
-        'zkydchaincombine': 'csfzzxqmley'
+        'buyHPF': 'csfzzxqmley'
     },
     'guangchang': {},
     'yihuang': {},

@@ -49,16 +49,18 @@ compress-package-zg:
   build_command: yarn build
   route_dict:
     fuzhou: [ 
-      "socialassistance",
+      "buyHPF",
+      # "rentHPF",
+      # "lhjychain",
       # "qyzgtxcombine",
-      # "qyzgtx",
       # "qyzgtxearly",
       # "zkydchain",
       # "yglychain",
       # "lhjychain",
       # "qyzgtx",
       ]
-    lean: ['zkydchaincombine']
+    # lean: ['zkydchaincombine']
+    lean: []
     guangchang: []
     yihuang: []
     linchuan: []

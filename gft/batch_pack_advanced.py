@@ -117,7 +117,7 @@ def pack(project_path, package_path, package_name, project_branch_name, build_co
         os.system('pwd')
         os.system('git branch')
         print('start execute build command: ', build_command)
-        res = subprocess.check_output(['yarn', 'build'], encoding='utf-8')
+        res = subprocess.check_output(build_command.split(), encoding='utf-8')
         # res = subprocess.check_output(['npm','run', 'build'], encoding='utf-8')
         # res = subprocess.check_output(['yarn', 'build:test'], encoding='utf-8')
         if 'Done in' in res:
