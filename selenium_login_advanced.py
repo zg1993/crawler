@@ -5,6 +5,7 @@ import os
 import traceback
 import argparse
 from tools.file_utils import parser_yaml
+from tools.utils import logger_config
 import itertools
 # import functools
 # from matplotlib.dates import SecondLocator
@@ -35,6 +36,8 @@ ACCOUNT_PASSWD = {}
 PROJECT_PATH = None
 BUILD_COMMAND = None
 ROUTE_DICT = None
+
+logger = logger_config(log_path='/var/log/crawler/gft_log.txt', logging_name='version')
 
 
 def configure_gft(file_path=CONFIG_FILE_PATH,
@@ -298,10 +301,10 @@ class GftSimular(Simulator):
             # 该应用此版本号已存在
             # print(tip.text)
             if '保存成功' == tip.text:
-                print('{0} 添加成功{1}'.format(self.app_name, version_text))
+                logger.info('{0} 添加成功{1}'.format(self.app_name, version_text))
                 self.submit_review(version_text)
             else:
-                print('{0} 添加失败: {1}'.format(self.app_name, tip.text))
+                logger.error('{0} 添加失败: {1}'.format(self.app_name, tip.text))
         except Exception as e:
             print('{0} 添加失败'.format(self.app_name))
             print(e)
@@ -345,7 +348,7 @@ class GftSimular(Simulator):
             # )).click()
             # e = WebDriverWait(self.browser, timeout=TIMEOUT).until(
             # lambda b: b.find_element(By.XPATH, '//tbody[1]/tr[1]/td[8]"]'))
-            print('提交审核成功:{0}，版本号{1}'.format(self.app_name, version_text))
+            logger.info('提交审核成功:{0}，版本号{1}'.format(self.app_name, version_text))
         except Exception as e:
             print(e)
             print('请指定正确的版本')
@@ -477,7 +480,7 @@ if __name__ == '__main__':
                 # add version
                 print('load', load_file(JSON_PATH))
                 test(load_json)
-                print(wechat())
+                # print(wechat()) #修改为写xlsx并发送邮件
             else:
                 print('end')
         # end
@@ -494,6 +497,6 @@ if __name__ == '__main__':
                 print('load', load_file(JSON_PATH))
                 load_json = load_file(JSON_PATH)
                 batch_add_version_advanced(load_json)
-                print(wechat())
+                # print(wechat()) #修改为写xlsx并发送邮件
             else:
                 print('end')
