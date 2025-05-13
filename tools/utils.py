@@ -1,8 +1,9 @@
 # -*-coding: utf-8 -*-
 
-import pytz
+# import pytz
 import os
 import logging
+import zipfile
 
 
 def logger_config(log_path,logging_name):
@@ -34,9 +35,9 @@ def logger_config(log_path,logging_name):
     return logger
  
 
-def timestamp_to_str(timestamp):
-    tz = pytz.timezone('Asia/Macau')
-    return pytz.datetime.datetime.fromtimestamp(timestamp,tz).strftime('%Y-%m-%d %H:%M')
+# def timestamp_to_str(timestamp):
+#     tz = pytz.timezone('Asia/Macau')
+#     return pytz.datetime.datetime.fromtimestamp(timestamp,tz).strftime('%Y-%m-%d %H:%M')
     
 
 def write_file(path, content):
@@ -45,12 +46,25 @@ def write_file(path, content):
     with open(path, 'w+') as f:
         f.write(content)
 
+
+
+def zip_folder(folder_path, output_path):
+    with zipfile.ZipFile(output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                arcname = os.path.relpath(file_path, folder_path)
+                zipf.write(file_path, arcname)
+
+
 if __name__ == "__main__":
-    logger = logger_config(log_path='/var/log/crawler/gft_log.txt', logging_name='version')
-    logger_test = logger_config(log_path='log1.txt', logging_name='test')
-    logger.info("sssss是是是")
-    logger.error("是是是error")
-    logger.debug("是是是debug")
-    logger.warning("是是是warning")
+    # logger = logger_config(log_path='/var/log/crawler/gft_log.txt', logging_name='version')
+    # logger_test = logger_config(log_path='log1.txt', logging_name='test')
+    # logger.info("sssss是是是")
+    # logger.error("是是是error")
+    # logger.debug("是是是debug")
+    # logger.warning("是是是warning")
     print('print和logger输出是有差别的！')
+    # 使用示例
+    zip_folder(r"C:\Users\Administrator\workspace\backend-manage-system\test", r"C:\Users\Administrator\workspace\backend-manage-system\text.zip")
     # logger_test.info('11')

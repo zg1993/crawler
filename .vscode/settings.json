@@ -1,2 +1,11 @@
 {
-}
+    "terminal.integrated.profiles.windows": {
+      "PowerShell": {
+        "source": "PowerShell",
+        "args": ["-NoExit", "/c", "chcp 65001"]
+      }
+    },
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "python.defaultInterpreterPath": "C:\\Users\\Administrator\\.conda\\envs\\env311\\python.exe",
+    "python.terminal.activateEnvironment": true,
+  }

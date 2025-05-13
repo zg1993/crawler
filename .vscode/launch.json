@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+      
+      {
+        "name": "Python: Current File",
+        "type": "python",
+        "request": "launch",
+        "program": "${file}",
+        "python": "${command:python.interpreterPath}"  // 使用当前选择的解释器
+      }
+    ]
+  }
