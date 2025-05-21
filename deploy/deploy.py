@@ -89,11 +89,23 @@ def ssh_deploy_jd(server_ip='', server_deploy_path='', package_name='', project_
     scp_command = f"scp -r {package_zip} root@{server_ip}:{server_deploy_path}"
     print(f'executing {scp_command}')
     os.system(scp_command)
+    
+    
     #解压
     # package_path = os.path.join(server_deploy_path, package_name).replace(os.sep, '/')
     ssh_remote_command = f'ssh root@{server_ip}'
     unzip_command = f"unzip -o {server_deploy_path}/{package_name}.zip -d {server_deploy_path}"
     execute_command = f'{ssh_remote_command} "{unzip_command}"'
+    
+    #解压前删除css js 文件夹（打包后的文件名带hash值）
+    delete_css= f'rm -rf {server_deploy_path}/css'
+    delete_js= f'rm -rf {server_deploy_path}/js'
+    execute_delete_css_command = f'{ssh_remote_command} {delete_css}'
+    execute_delete_js_command = f'{ssh_remote_command} {delete_js}'
+    print(f'executing {execute_delete_css_command}')
+    os.system(execute_delete_css_command)
+    print(f'executing {execute_delete_js_command}')
+    os.system(execute_delete_js_command)
     print(f'executing {execute_command}')
     os.system(execute_command)
 

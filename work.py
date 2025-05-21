@@ -21,15 +21,36 @@ dd = {
         'name': 'IsRisk', 
          'value': [('INIT', -1, '未认证'),('pass', 1, '通过'),('nopass', 0, '未通过')]}
 
-orderTypeDict = {
-    'annotation': '// 0首次下单 1二次复购',
-        'name': 'placeOrderType', 
-         'value': [('first',  '首次下单'),('placeOrder2', '通过'),('nopass', '未通过')]}
-
 orderPayTypeDict = {
-        'annotation': '// 0 : 分期订单号  1：全额支付',
-        'name': 'payType', 
-         'value': [('Installment', 0, '分期订单号'),('full', 1, '全额支付')]}
+    'annotation': '// IOS :  1 ANDROID :  2 H5 :  3 微信小程序 :  4支付宝小程序 :  5',
+        'name': 'supportPlatformType', 
+         'value': [('IOS', 1, 'IOS'),('ANDROID', 2, 'ANDROID'),('H5', 3, 'H5'),('wechat', 4, '微信小程序'),('aliapy', 5, '支付宝小程序')]}
+
+orderPayTypeDict5 = {
+        'annotation': '//捷券发放状态：recharge:处理中; success:处理成功；fail:失败',
+        'name': 'couponProcessStatus', 
+         'value': [('recharge', 'recharge', '处理中'),('success', 'success', '处理成功'),('fail', 'fail', '失败')]}
+
+
+orderPayTypeDict4 = {
+        'annotation': '//couponStatus 捷券状态    1上架、0下架',
+        'name': 'couponStatus', 
+         'value': [('up', 1, '上架'),('down', 0, '下架')]}
+
+orderPayTypeDict3 = {
+        'annotation': '//couponType 捷券类型    商品类型 1、直充 2、卡密 3、话费',
+        'name': 'couponType', 
+         'value': [('direct', 1, '直充'),('card', 2, '卡密'),('phone', 3, '话费')]}
+
+orderPayTypeDict2 = {
+        'annotation': '//payState 流水支付状态   1 : 支付中 2：支付成功 3：支付失败 （条件赛选）UN_PAY(0,"未支付"),PAY_PROGRESSING(1,"支付中"),PAY_SUCCESS(2,"支付成功"),PAY_FAIL(3,"支付失败")',
+        'name': 'payStatus', 
+         'value': [('unpay', 0, '未支付'),('paying', 1, '支付中'),('payed', 2, '支付成功'),('payFail', 3, '支付失败')]}
+
+orderPayTypeDict1 = {
+        'annotation': '//payChannelModel 支付方式   0 芝麻免押 1 汇付宝',
+        'name': 'payChannelModel', 
+         'value': [('sesame', 0, '芝麻免押'),('hfb', 1, '汇付宝')]}
 
 billTypeDict = {
      'annotation': '// 1:修改账单分期金额 2:延迟账单到期 3:完结账单 4:线下履约',
@@ -108,4 +129,4 @@ def syncFiles(enumFilePath, content):
 if __name__ == '__main__':
     p = r'C:\Users\Administrator\workspace\backend-manage-system\src\const\enum.js'
     # syncFiles(p)
-    generateJsEnum(approveStatusDict, p)
+    generateJsEnum(orderPayTypeDict, p)
