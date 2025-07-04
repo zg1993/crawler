@@ -53,6 +53,8 @@ def build_package(branch, project_path='', package_name='', build_command='yarn 
     os.system('git pull')
     print('executing: {0}'.format(build_command))
     os.system(build_command)
+    if os.path.exists(package_name):
+        return True
     if not os.path.exists('dist'):
         print('build failed')
         return False
@@ -172,6 +174,18 @@ def deploy(project, branch):
         # ssh_deploy(**deploy_info)
         ssh_deploy_jd(**deploy_info)
 
+def checkNodeVersion():
+    try:
+        node_version = os.popen('node -v').read().strip()
+        print(f'node version: {node_version}')
+        if('14.21.3' in node_version):
+            return True
+        else:
+            return False
+    except Exception as e:
+        print(f'error node version {str(e)}')
+        return False
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -180,4 +194,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     project = args.project
     branch = args.branch or 'dev'
-    deploy(project, branch)
+    if checkNodeVersion():
+        deploy(project, branch)
+    else:
+        print(f'node version incorrect')

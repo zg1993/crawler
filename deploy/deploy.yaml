@@ -15,6 +15,13 @@ jd-bms:
   server_ip: jdserver
   user: root
   build_command: npm run build
+yp-bms:
+  project_path: C:\Users\Administrator\workspace\youpin-ui-admin
+  server_deploy_path: /usr/local/nginx/html
+  package_name: xnzAdminWeb
+  server_ip: ypserver
+  user: root
+  build_command: npm run build
 gwtph-web: # 项目标识唯一
   project_path: /home/zg/work/gwtph-mms-frontend # 项目目录
   server_deploy_path: /etc/nginx/html # 服务器部署路径
