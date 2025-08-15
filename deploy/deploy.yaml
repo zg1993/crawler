@@ -15,10 +15,24 @@ jd-bms:
   server_ip: jdserver
   user: root
   build_command: npm run build
+jb-bms:
+  project_path: C:\Users\Administrator\workspace\backend-manage-system
+  server_deploy_path: /www/wwwroot/admin.jinbisc.com
+  package_name: dist-jinbi
+  server_ip: jbserver
+  user: root
+  build_command: npm run build:j
 yp-bms:
   project_path: C:\Users\Administrator\workspace\youpin-ui-admin
   server_deploy_path: /usr/local/nginx/html
   package_name: xnzAdminWeb
+  server_ip: ypserver
+  user: root
+  build_command: npm run build
+yph-bms:
+  project_path: C:\Users\Administrator\workspace\admin-youpin
+  server_deploy_path: /www/wwwroot/youpinhua-admin
+  package_name: dist
   server_ip: ypserver
   user: root
   build_command: npm run build

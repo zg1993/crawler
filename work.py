@@ -20,8 +20,78 @@ dd = {
         'annotation': '// 是否通过风控 0未通过 1通过 -1初始状态（用户还未认证）',
         'name': 'IsRisk', 
          'value': [('INIT', -1, '未认证'),('pass', 1, '通过'),('nopass', 0, '未通过')]}
+orderPayTypeList = [
+    {
+        'annotation': '// 运营商类型 1 电信 2 联通 3 移动 4 其它运营商',
+        'name': 'operatorType', 
+         'value': [('ct', 1, '电信'),('cu', 2, '联通'),('cm', 3, '移动'),('other', 4, '其它运营商')]}
+    # {
+    #     'annotation': '// 运营商认证结果 1一致 2不一致 3未找到',
+    #     'name': 'operatorResult', 
+    #      'value': [('consistent', 1, '一致'),('inconsistent', 2, '不一致'),('notFound', 3, '未找到')]}
+#     {
+# 'annotation': '//orderContractType 合同选择状态 默认1 爱签  2赋强黄金公证 3永川公证',
+#         'name': 'ContractType', 
+#          'value': [('AiQian', 1,'爱签'),('FuQiang',2, '赋强黄金公证'),('YongChuan',3, '永川公证' )
+#                    ]
+#     },
+#     {
+# 'annotation': '//ExamineStatus 审核状态 1 未分配  2 已分配',
+#         'name': 'ExamineStatus', 
+#          'value': [('UnAssign', 1,'未分配'),('Assigned',2, '已分配') 
+#                    ]
+#     },
+#     {
+# 'annotation': '//ExamineResult 审核结果 1 未审核  2 已审核',
+#         'name': 'ExamineResult', 
+#          'value': [('UnExamine', 1,'未审核'),('examined',2, '已审核') 
+#                    ]
+#     },
+#     {
+# 'annotation': '//app APP ;  web app的H5 "wechat", //微信浏览器 "mobile", // 移动端本地浏览器 "desktop", // 桌面浏览器',
+#         'name': 'DeviceType', 
+#          'value': [('web', 'web','APP-H5'),('app','app', 'APP'),('wechat','wechat', '微信' )
+#                    ,('mobile','mobile', '移动端'),('desktop', 'desktop','桌面'),]
+#     },
+#     {
+# 'annotation': '// 风控等级 1 S+ 2 S 999 拒绝',
+#         'name': 'risklevel', 
+#          'value': [('SS', 1, 'S+'),('S', 2, 'S'),('A', 3, 'A'),('B', 4, 'B'),('C', 5, 'C'),('reject', 999, '拒绝')]
+#     },
+#     {
+# 'annotation': '// 风险等级 1 命中 0 未命中 -1 未认证',
+#         'name': 'riskText', 
+#           'value': [('SS', 1, '极低风险'),('S', 2, '低风险'),('A', 3, '正常风险'),('B', 4, '高风险'),('C', 5, '极高风险'),('reject', 999, '拒绝')]
+#     },
+#     {
+# 'annotation': '//  1 命中 0 未命中 -1 未认证',
+#         'name': 'shelves', 
+#          'value': [('miss', 1, '销售中'),('hit', 2, '仓库中'),('unauth', -1, '草稿')]
+#     },
+#     {
+# 'annotation': '//  1 命中 0 未命中 -1 未认证',
+#         'name': 'industryBlacklist', 
+#          'value': [('miss', 0, '未命中'),('hit', 1, '命中'),('unauth', -1, '未认证')]
+#     },
+    
+#     {
+# 'annotation': '// isTrack  跟踪状态 0 未跟进 1 已跟进',
+#         'name': 'trackStatus', 
+#          'value': [('unTrack', 0, '未跟进'),('tracked', 1, '已跟进')]
+#     }
+]
 
-orderPayTypeDict = {
+orderPayTypeDict = [
+    { 'annotation': '// 商品的状态 销售中 仓库中 草稿',
+        'name': 'goodsStatus', 
+         'value': [('sale', 1, '销售中'),('storage', 2, '仓库中'),('manuscript', 3, '草稿')]},
+    
+    { 'annotation': '// 渠道状态 1 启用 2 停用',
+        'name': 'channelStatus', 
+         'value': [('active', 1, '启用'),('deactive', 2, '停用')]},
+         ]
+
+orderPayTypeDict6 = {
     'annotation': '// IOS :  1 ANDROID :  2 H5 :  3 微信小程序 :  4支付宝小程序 :  5',
         'name': 'supportPlatformType', 
          'value': [('IOS', 1, 'IOS'),('ANDROID', 2, 'ANDROID'),('H5', 3, 'H5'),('wechat', 4, '微信小程序'),('aliapy', 5, '支付宝小程序')]}
@@ -96,6 +166,7 @@ def generateJsEnum(d, enumFilePath,autoIndex=False):
             arrEnum.append(f'{enumName.upper()}: {index},')
             arrDict.append(f'[{varName}Enum.{enumName.upper()}]: "{viewLabel}",')
     else:
+        # print('---d', d.get('value') )
         for enumName, enumVal, viewLabel in d.get('value'):
             if  str == type(enumVal):
                 enumVal = f'"{enumVal}"'
@@ -129,4 +200,8 @@ def syncFiles(enumFilePath, content):
 if __name__ == '__main__':
     p = r'C:\Users\Administrator\workspace\backend-manage-system\src\const\enum.js'
     # syncFiles(p)
-    generateJsEnum(orderPayTypeDict, p)
+    if(isinstance(orderPayTypeList, list)):
+        for item in orderPayTypeList:
+            generateJsEnum(item, p)
+    else:
+        generateJsEnum(orderPayTypeList, p)
