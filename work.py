@@ -20,11 +20,34 @@ dd = {
         'annotation': '// 是否通过风控 0未通过 1通过 -1初始状态（用户还未认证）',
         'name': 'IsRisk', 
          'value': [('INIT', -1, '未认证'),('pass', 1, '通过'),('nopass', 0, '未通过')]}
+
+# 'value': [('approving', 1, '待审核'),('reject', 2, '审核拒绝'),
+#                    ('signing', 3, '待签合同'),('paying', 4, '待支付'),('sending', 5, '待发货'),
+#                    ('receiving', 6, '待收货'),('contracting', 7, '合约中'),('canceled', 8, '已取消')
+#                    ]}
 orderPayTypeList = [
     {
-        'annotation': '// 运营商类型 1 电信 2 联通 3 移动 4 其它运营商',
-        'name': 'operatorType', 
-         'value': [('ct', 1, '电信'),('cu', 2, '联通'),('cm', 3, '移动'),('other', 4, '其它运营商')]}
+        'annotation': '',
+        'name': 'MaritalAuthState', 
+        'value': [
+            ('marry', 0, '结婚'),
+            ('divorce', 1, '离婚'),
+            ('unmatched', 2, '未匹配'),
+            ('abnormal', -1, '数据源查询异常'),
+            ('check', -2, '核查中')]
+         }
+    # {
+    #     'annotation': '// 1 待签合同 | 2 待放款（待审核 机器审核）|  3放款失败 | 4合约中 | 5已完结',
+    #     'name': 'CashOrderStatus', 
+    #      'value': [('signing', 1, '待签合同'),('cashing', 2, '待放款'),('cashFailed', 3, '放款失败'),('contracting', 4, '合约中'),('finished', 5, '已完结')]}
+    # {
+    #     'annotation': '// 商品类型 loanType String 1商城 2 借贷',
+    #     'name': 'loanType', 
+    #      'value': [('mall', 1, '商城'),('cash', 2, '借贷')]}
+    # {
+    #     'annotation': '// 运营商类型 1 电信 2 联通 3 移动 4 其它运营商',
+    #     'name': 'operatorType', 
+    #      'value': [('ct', 1, '电信'),('cu', 2, '联通'),('cm', 3, '移动'),('other', 4, '其它运营商')]}
     # {
     #     'annotation': '// 运营商认证结果 1一致 2不一致 3未找到',
     #     'name': 'operatorResult', 

@@ -22,6 +22,20 @@ jb-bms:
   server_ip: jbserver
   user: root
   build_command: npm run build:j
+yp-test:
+  project_path: C:\Users\Administrator\workspace\youpin-ui-admin
+  server_deploy_path: /www/wwwroot/yp-admin
+  package_name: xnzAdminWeb
+  server_ip: testserver
+  user: root
+  build_command: npm run build:t
+jd-test:
+  project_path: C:\Users\Administrator\workspace\backend-manage-system
+  server_deploy_path: /www/wwwroot/jindi-server-ui
+  package_name: dist
+  server_ip: testserver
+  user: root
+  build_command: npm run build
 yp-bms:
   project_path: C:\Users\Administrator\workspace\youpin-ui-admin
   server_deploy_path: /usr/local/nginx/html
