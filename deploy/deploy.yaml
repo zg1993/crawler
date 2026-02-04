@@ -22,6 +22,13 @@ jb-bms:
   server_ip: jbserver
   user: root
   build_command: npm run build:j
+yxyp-bms:
+  project_path: C:\Users\Administrator\workspace\backend-manage-system
+  server_deploy_path: /www/wwwroot/admin.yixyp.com
+  package_name: dist-yxyp
+  server_ip: yxypserver
+  user: root
+  build_command: npm run build:y
 yp-test:
   project_path: C:\Users\Administrator\workspace\youpin-ui-admin
   server_deploy_path: /www/wwwroot/yp-admin
